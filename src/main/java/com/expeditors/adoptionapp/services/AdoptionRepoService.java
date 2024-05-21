@@ -54,6 +54,9 @@ public class AdoptionRepoService implements BaseService {
 
     public boolean update(Adopter updateAdopter) {
         try {
+            if(!adopterDAO.existsById(updateAdopter.getAdopterId())) {
+                return false;
+            }
             adopterDAO.save(updateAdopter);
         }
         catch(Exception ex) {
@@ -64,6 +67,9 @@ public class AdoptionRepoService implements BaseService {
 
     public boolean deleteById(int id) {
         try {
+            if(!adopterDAO.existsById(id)) {
+                return false;
+            }
             adopterDAO.deleteById(id);
         }
         catch(Exception ex) {

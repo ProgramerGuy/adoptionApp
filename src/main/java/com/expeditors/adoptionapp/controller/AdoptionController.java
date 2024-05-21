@@ -76,7 +76,7 @@ public class AdoptionController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found adopter with id: " + id);
         }
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping
@@ -86,6 +86,6 @@ public class AdoptionController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found adopter with id: " + adopter.getAdopterId());
         }
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(result);
     }
 }

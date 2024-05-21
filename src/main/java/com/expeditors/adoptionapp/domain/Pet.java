@@ -70,6 +70,18 @@ public class Pet {
         this.petId = petId;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setType(@Nullable PetType type) {
+        this.type = type;
+    }
+
+    public void setBreed(String breed) {
+        this.breed = breed;
+    }
+
     @Override
     public String toString () {
         return ToStringBuilder.reflectionToString(this,ToStringStyle.MULTI_LINE_STYLE);
