@@ -57,7 +57,7 @@ public class PetController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found pet with id: " + id);
         }
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping
@@ -67,6 +67,6 @@ public class PetController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found pet with id: " + pet.getPetId());
         }
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(result);
     }
 }

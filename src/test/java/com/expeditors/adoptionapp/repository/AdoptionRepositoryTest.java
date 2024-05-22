@@ -31,9 +31,10 @@ public class AdoptionRepositoryTest {
 
     @Test
     public void findById() {
-        Adopter adopter = adopterDao.findById(1);
+        List<Adopter> adopters = adopterDao.findAll();
+        Adopter adopter = adopterDao.findById(adopters.get(0).getAdopterId());
 
-        assertEquals(adopter.getAdopterId(),1);
+        assertEquals(adopter.getAdopterId(),adopters.get(0).getAdopterId());
 
         adopter = adopterDao.findById(-1);
 

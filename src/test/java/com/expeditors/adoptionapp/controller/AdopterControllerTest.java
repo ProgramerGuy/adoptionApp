@@ -1,23 +1,20 @@
 package com.expeditors.adoptionapp.controller;
 
 import com.expeditors.adoptionapp.domain.Adopter;
-import com.expeditors.adoptionapp.services.AdoptionRepoService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,24 +26,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-//@DataJpaTest
-public class PetAdoptionControllers {
-
-    private List<Adopter> adopters = List.of(
-            new Adopter(
-                    1,
-                    "Francisco",
-                    "8677566545"),
-            new Adopter(
-                    2,
-                    "Amador Hernandez",
-                    "8677654512"));
+public class AdopterControllerTest {
 
     @Autowired
     private ObjectMapper mapper;
-
-    @MockBean
-    private AdoptionRepoService adoptionService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -57,7 +40,7 @@ public class PetAdoptionControllers {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON);
 
-        doReturn(adopters).when(adoptionService).getAll();
+        //doReturn(adopters).when(adoptionService).getAll();
 
         mockMvc.perform(builder)
                 .andExpect(status().isOk());
@@ -66,11 +49,19 @@ public class PetAdoptionControllers {
 
     @Test
     public void getAdopterById() throws Exception {
-        MockHttpServletRequestBuilder builder = get("/Adopter/{id}",1)
+        ResultActions actions = mockMvc.perform( get("/Adopter")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON));
+
+        MvcResult result = actions.andReturn();
+
+        String jsonResult = result.getResponse().getContentAsString();
+        List<Adopter> adopters = mapper.readValue(jsonResult, new TypeReference<List<Adopter>>() {});
+        Adopter adopter = adopters.getLast();
+
+        MockHttpServletRequestBuilder builder = get("/Adopter/{id}",adopter.getAdopterId())
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON);
-
-        doReturn(adopters.get(0)).when(adoptionService).getById(1);
 
         mockMvc.perform(builder)
                 .andExpect(status().isOk());
@@ -78,7 +69,7 @@ public class PetAdoptionControllers {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Transactional
     public void insert() throws Exception {
         Adopter adopter = new Adopter(
                 1,
@@ -92,7 +83,7 @@ public class PetAdoptionControllers {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonString));
 
-        doReturn(adopter).when(adoptionService).insert(adopter);
+//        doReturn(adopter).when(adoptionService).insert(adopter);
 
         actions = actions.andExpect(status().isCreated());
 
@@ -103,7 +94,7 @@ public class PetAdoptionControllers {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Transactional
     public void deleteAdopter() throws Exception {
         ResultActions actions = mockMvc.perform(delete("/Adopter/{id}", 1000)
                 .accept(MediaType.APPLICATION_JSON)
@@ -122,13 +113,23 @@ public class PetAdoptionControllers {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonString));
-        doReturn(adopter).when(adoptionService).insert(adopter);
+//        doReturn(adopter).when(adoptionService).insert(adopter);
         actions.andExpect(status().isCreated());
 
-        doReturn(adopter).when(adoptionService).getById(234);
-        doReturn(true).when(adoptionService).deleteById(234);
+//        doReturn(adopter).when(adoptionService).getById(234);
+//        doReturn(true).when(adoptionService).deleteById(234);
 
-        actions = mockMvc.perform(delete("/Adopter/{id}", 234)
+        actions = mockMvc.perform( get("/Adopter")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON));
+
+        MvcResult result = actions.andReturn();
+
+        String jsonResult = result.getResponse().getContentAsString();
+        List<Adopter> adopters = mapper.readValue(jsonResult, new TypeReference<List<Adopter>>() {});
+        Adopter adopterToDelete = adopters.getLast();
+
+        actions = mockMvc.perform(delete("/Adopter/{id}", adopterToDelete.getAdopterId())
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON));
 
@@ -136,60 +137,66 @@ public class PetAdoptionControllers {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Transactional
     public void updateAdopter() throws Exception {
-        Adopter adopter = new Adopter(
-                1,
+
+        Adopter newAdopter = new Adopter(
+                234,
                 "Francisco",
                 "8677566545");
-        doReturn(adopter).when(adoptionService).getById(1);
 
-//        MockHttpServletRequestBuilder builder = get("/Adopter/{id}", 1)
-//                .accept(MediaType.APPLICATION_JSON)
-//                .contentType(MediaType.APPLICATION_JSON);
-//
-//        ResultActions actions = mockMvc.perform(builder)
-//                .andExpect(status().isOk());
-//        MvcResult result = actions.andReturn();
-//
-//
-////        String jsonResult = result.getResponse().getContentAsString();
-////        JsonNode node = mapper.readTree(jsonResult);
-////        Adopter adopter = mapper.treeToValue(node.get("entity"), Adopter.class);
-//        adopter.setName("Mariana Rios");
+        String jsonString = mapper.writeValueAsString(newAdopter);
+
+        ResultActions actions = mockMvc.perform(post("/Adopter")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonString));
+//        doReturn(adopter).when(adoptionService).insert(adopter);
+        actions.andExpect(status().isCreated());
+
+//        doReturn(adopter).when(adoptionService).getById(234);
+//        doReturn(true).when(adoptionService).deleteById(234);
+
+        actions = mockMvc.perform( get("/Adopter")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON));
+
+        MvcResult result = actions.andReturn();
+
+        String jsonResult = result.getResponse().getContentAsString();
+        List<Adopter> adopters = mapper.readValue(jsonResult, new TypeReference<List<Adopter>>() {});
+        Adopter adopter = adopters.getLast();
+
+        adopter.setName("Mariana Rios");
 //
         String updateEntity = mapper.writeValueAsString(adopter);
 
 
-        doReturn(adopter).when(adoptionService).insert(adopter);
-        doReturn(true).when(adoptionService).update(adopter);
-
-        ResultActions actions = mockMvc.perform(put("/Adopter")
+        actions = mockMvc.perform(put("/Adopter")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateEntity));
 
         actions.andExpect(status().isOk());
 
-        //doReturn(adopter).when(adoptionService).getById(1);
 
-        MockHttpServletRequestBuilder builder = get("/Adopter/{id}", 1)
+        MockHttpServletRequestBuilder builder = get("/Adopter/{id}", adopter.getAdopterId())
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON);
 
         actions = mockMvc.perform(builder)
                 .andExpect(status().isOk());
-        //result = actions.andReturn();
+        result = actions.andReturn();
 
-//        jsonResult = result.getResponse().getContentAsString();
-//        node = mapper.readTree(jsonResult);
-//        adopter = mapper.treeToValue(node.get("entity"), Adopter.class);
+        jsonResult = result.getResponse().getContentAsString();
+        JsonNode node = mapper.readTree(jsonResult);
+        adopter = mapper.treeToValue(node, Adopter.class);
 
-        assertEquals("Marina Rios", adopter.getName());
+        assertEquals("Mariana Rios", adopter.getName());
 
         adopter.setAdopterId(100);
         updateEntity = mapper.writeValueAsString(adopter);
-        doReturn(null).when(adoptionService).update(adopter);
+        //doReturn(null).when(adoptionService).update(adopter);
         actions = mockMvc.perform(put("/Adopter")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)

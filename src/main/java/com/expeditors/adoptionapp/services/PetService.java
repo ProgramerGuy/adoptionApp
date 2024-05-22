@@ -37,6 +37,9 @@ public class PetService {
 
     public boolean update(Pet pet) {
         try {
+            if(!petDao.existsById(pet.getPetId())) {
+                return false;
+            }
             petDao.save(pet);
         }
         catch(Exception ex) {
@@ -47,6 +50,9 @@ public class PetService {
 
     public boolean deleteById(int id) {
         try {
+            if(!petDao.existsById(id)) {
+                return false;
+            }
             petDao.deleteById(id);
         }
         catch(Exception ex) {
