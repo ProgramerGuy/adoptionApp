@@ -2,6 +2,7 @@ package com.expeditors.adoptionapp.repository;
 
 import com.expeditors.adoptionapp.dao.jpa.JPAAdopterDao;
 import com.expeditors.adoptionapp.domain.Adopter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -21,6 +22,15 @@ public class AdoptionRepositoryTest {
 
     @Autowired
     private JPAAdopterDao adopterDao;
+
+    @BeforeEach
+    public void getReady() {
+        Adopter adopter = new Adopter(
+                34,
+                "Amador Hernandez",
+                "8975643241");
+        adopterDao.save(adopter);
+    }
 
     @Test
     public void getAll() {
