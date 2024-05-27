@@ -2,10 +2,12 @@ package com.expeditors.adoptionapp.controller;
 
 import com.expeditors.adoptionapp.domain.Pet;
 import com.expeditors.adoptionapp.domain.Pet;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,6 +34,20 @@ public class PetControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @BeforeEach
+    @Transactional
+    public void getReady() throws Exception {
+        Pet pet = new Pet.PetBuilder(Pet.PetType.Cat).setName("Kittier").setBreed("Syamess").build();
+        String jsonString = mapper.writeValueAsString(pet);
+
+        ResultActions actions = mockMvc.perform(post("/Pet")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonString));
+
+        actions.andExpect(status().isCreated());
+    }
 
     @Test
     public void getAll() throws Exception {

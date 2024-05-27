@@ -1,10 +1,13 @@
 package com.expeditors.adoptionapp.controller;
 
 import com.expeditors.adoptionapp.domain.Adopter;
+import com.expeditors.adoptionapp.domain.AdoptionRegister;
+import com.expeditors.adoptionapp.domain.Pet;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,6 +18,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,9 +38,49 @@ public class AdopterControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @BeforeEach
+    @Transactional
+    public void getReady() throws Exception {
+        Adopter adopter = new Adopter(
+                34,
+                "Amador Hernandez",
+                "8975643241");
+        String jsonString = mapper.writeValueAsString(adopter);
+
+        ResultActions actions = mockMvc.perform(post("/Adopter")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonString));
+
+        actions.andExpect(status().isCreated());
+
+        Pet pet = new Pet.PetBuilder(Pet.PetType.Dog).setName("Mardog").setBreed("Daness").build();
+        jsonString = mapper.writeValueAsString(pet);
+
+        actions = mockMvc.perform(post("/Pet")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonString));
+
+        actions.andExpect(status().isCreated());
+    }
+
     @Test
     public void getAll() throws Exception {
         MockHttpServletRequestBuilder builder = get("/Adopter")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON);
+
+        //doReturn(adopters).when(adoptionService).getAll();
+
+        mockMvc.perform(builder)
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    public void getAllRegisters() throws Exception {
+        MockHttpServletRequestBuilder builder = get("/Adopter/register")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -66,6 +110,49 @@ public class AdopterControllerTest {
         mockMvc.perform(builder)
                 .andExpect(status().isOk());
 
+    }
+
+    @Test
+    @Transactional
+    public void insertRegister() throws Exception {
+//        ResultActions actions = mockMvc.perform( get("/Adopter")
+//                .accept(MediaType.APPLICATION_JSON)
+//                .contentType(MediaType.APPLICATION_JSON));
+//
+//        MvcResult result = actions.andReturn();
+//
+//        String jsonResult = result.getResponse().getContentAsString();
+//        List<Adopter> adopters = mapper.readValue(jsonResult, new TypeReference<List<Adopter>>() {});
+//        Adopter adopter = adopters.getLast();
+//
+//        actions = mockMvc.perform( get("/Pet")
+//                .accept(MediaType.APPLICATION_JSON)
+//                .contentType(MediaType.APPLICATION_JSON));
+//
+//        result = actions.andReturn();
+//
+//        jsonResult = result.getResponse().getContentAsString();
+//        List<Pet> pets = mapper.readValue(jsonResult, new TypeReference<List<Pet>>() {});
+//        Pet pet = pets.getLast();
+
+        Adopter adopter = new Adopter(
+                1,
+                "Francisco",
+                "8677566534");
+
+        Pet pet = new Pet.PetBuilder(Pet.PetType.Dog).setName("Mardog").setBreed("Daness").build();
+
+        AdoptionRegister register = new AdoptionRegister(1,adopter,pet, LocalDate.now());
+
+        String jsonString = mapper.writeValueAsString(register);
+
+        ResultActions actions = mockMvc.perform(post("/Adopter/register")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonString));
+
+
+        actions.andExpect(status().isCreated());
     }
 
     @Test

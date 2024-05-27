@@ -4,6 +4,7 @@ import com.expeditors.adoptionapp.dao.jpa.JPAAdopterDao;
 import com.expeditors.adoptionapp.dao.jpa.PetDao;
 import com.expeditors.adoptionapp.domain.Adopter;
 import com.expeditors.adoptionapp.domain.Pet;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -22,6 +23,12 @@ public class PetRepositoryTest {
     @Autowired
     private PetDao petDao;
 
+    @BeforeEach
+    public void getReady() {
+        Pet pet = new Pet.PetBuilder(Pet.PetType.Cat).setName("Kittier").setBreed("Syamess").build();
+        petDao.save(pet);
+    }
+
     @Test
     public void getAll() {
         List<Pet> pets = petDao.findAll();
@@ -31,9 +38,11 @@ public class PetRepositoryTest {
 
     @Test
     public void findById() {
-        Optional<Pet> pet = petDao.findById(1);
 
-        assertEquals(pet.get().getPetId(),1);
+        List<Pet> pets = petDao.findAll();
+        Optional<Pet> pet = petDao.findById(pets.get(0).getPetId());
+
+        assertEquals(pet.get().getPetId(),pets.get(0).getPetId());
 
         pet = petDao.findById(-1);
 
